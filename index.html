@@ -8,6 +8,8 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://rawgit.com/jeromeetienne/ar.js/1.7.2/aframe/build/aframe-ar.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bruno+Ace&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+
         .controls {
             position: absolute;
             top: 10px;
@@ -30,6 +32,8 @@
         .controls input {
             display: block;
             margin: 5px 0;
+            font-family: Raleway;
+            font-weight: 500;
         }
 
         .a-loader-title,
@@ -49,6 +53,10 @@
             <a-sphere position="0 0.5 0" material="color: red;"></a-sphere>
         </a-marker>
 
+        <a-marker preset="letterA" id="markerLetterA">
+            <a-sphere position="0 0.5 0" material="color: orange;"></a-sphere>
+        </a-marker>
+
         <a-entity camera></a-entity>
     </a-scene>
 
@@ -59,6 +67,16 @@
             <input type="range" id="volumeHiro" min="0" max="1" step="0.1" value="1">
             <label for="filterHiro">Hiro Filter:</label>
             <input type="range" id="filterHiro" min="100" max="5000" step="100" value="1000">
+            <label for="speedHiro">Speed:</label>
+            <input type="range" id="speedHiro" min="0.5" max="2" step="0.1" value="1">
+            <label for="loopHiro">Loop Hiro:</label>
+            <input type="checkbox" id="loopHiro">
+            <label for="echoHiro">Echo Hiro:</label>
+            <input type="checkbox" id="echoHiro">
+            <label for="delayHiro">Delay (ms):</label>
+            <input type="range" id="delayHiro" min="0" max="2000" step="50" value="500">
+            <label for="feedbackHiro">Feedback:</label>
+            <input type="range" id="feedbackHiro" min="0" max="1" step="0.1" value="0.5">
         </div>
 
         <div class="sampleBox">
@@ -67,16 +85,35 @@
             <input type="range" id="volumeKanji" min="0" max="1" step="0.1" value="1">
             <label for="filterKanji">Kanji Filter:</label>
             <input type="range" id="filterKanji" min="100" max="5000" step="100" value="1000">
+            <label for="speedKanji">Speed:</label>
+            <input type="range" id="speedKanji" min="0.5" max="2" step="0.1" value="1">
+            <label for="loopKanji">Loop Kanji:</label>
+            <input type="checkbox" id="loopKanji">
+            <label for="echoKanji">Echo Kanji:</label>
+            <input type="checkbox" id="echoKanji">
+            <label for="delayKanji">Delay (ms):</label>
+            <input type="range" id="delayKanji" min="0" max="2000" step="50" value="500">
+            <label for="feedbackKanji">Feedback:</label>
+            <input type="range" id="feedbackKanji" min="0" max="1" step="0.1" value="0.5">
         </div>
 
         <div class="sampleBox">
-            <audio id="audioBarcode" src="sound_3.mp3" controls preload="auto"></audio>
-            <label for="volumeKanji">Barcode Volume:</label>
-            <input type="range" id="volumeBarcode" min="0" max="1" step="0.1" value="1">
-            <label for="filterBarcode">Barcode Filter:</label>
-            <input type="range" id="filter" min="100" max="5000" step="100" value="1000">
+            <audio id="audioLetterA" src="sound_3.wav" controls preload="auto"></audio>
+            <label for="volumeLetterA">LetterA Volume:</label>
+            <input type="range" id="volumeLetterA" min="0" max="1" step="0.1" value="1">
+            <label for="filterLetterA">LetterA Filter:</label>
+            <input type="range" id="filterLetterA" min="100" max="5000" step="100" value="1000">
+            <label for="speedLetterA">Speed:</label>
+            <input type="range" id="speedLetterA" min="0.5" max="2" step="0.1" value="1">
+            <label for="loopLetterA">Loop Letter A:</label>
+            <input type="checkbox" id="loopLetterA">
+            <label for="echoLetterA">Echo Letter A:</label>
+            <input type="checkbox" id="echoLetterA">
+            <label for="delayLetterA">Delay (ms):</label>
+            <input type="range" id="delayLetterA" min="0" max="2000" step="50" value="500">
+            <label for="feedbackLetterA">Feedback:</label>
+            <input type="range" id="feedbackLetterA" min="0" max="1" step="0.1" value="0.5">
         </div>
-
     </div>
 
     <script>
@@ -85,22 +122,46 @@
 
         const audioHiro = document.getElementById("audioHiro");
         const audioKanji = document.getElementById("audioKanji");
+        const audioLetterA = document.getElementById("audioLetterA");
         const volumeHiroControl = document.getElementById("volumeHiro");
         const volumeKanjiControl = document.getElementById("volumeKanji");
+        const volumeLetterAControl = document.getElementById("volumeLetterA");
         const filterHiroControl = document.getElementById("filterHiro");
         const filterKanjiControl = document.getElementById("filterKanji");
+        const filterLetterAControl = document.getElementById("filterLetterA");
+        const speedHiroControl = document.getElementById("speedHiro");
+        const speedKanjiControl = document.getElementById("speedKanji");
+        const speedLetterAControl = document.getElementById("speedLetterA");
+        const loopHiroControl = document.getElementById("loopHiro");
+        const loopKanjiControl = document.getElementById("loopKanji");
+        const loopLetterAControl = document.getElementById("loopLetterA");
+        const echoHiroControl = document.getElementById("echoHiro");
+        const echoKanjiControl = document.getElementById("echoKanji");
+        const echoLetterAControl = document.getElementById("echoLetterA");
+        const delayHiroControl = document.getElementById("delayHiro");
+        const delayKanjiControl = document.getElementById("delayKanji");
+        const delayLetterAControl = document.getElementById("delayLetterA");
+        const feedbackHiroControl = document.getElementById("feedbackHiro");
+        const feedbackKanjiControl = document.getElementById("feedbackKanji");
+        const feedbackLetterAControl = document.getElementById("feedbackLetterA");
 
-        let hiroSource, kanjiSource, gainNodeHiro, gainNodeKanji, filterHiro, filterKanji;
+        let hiroSource, kanjiSource, letterASource, gainNodeHiro, gainNodeKanji, gainNodeLetterA, filterHiro, filterKanji, filterLetterA;
+        let delayNodeHiro, delayNodeKanji, delayNodeLetterA, feedbackNodeHiro, feedbackNodeKanji, feedbackNodeLetterA;
 
         function setupAudioNodes() {
             if (isAudioSetup) return;
 
+            // Create audio source elements
             hiroSource = audioContext.createMediaElementSource(audioHiro);
             kanjiSource = audioContext.createMediaElementSource(audioKanji);
+            letterASource = audioContext.createMediaElementSource(audioLetterA);
 
+            // Create gain nodes (volume control)
             gainNodeHiro = audioContext.createGain();
             gainNodeKanji = audioContext.createGain();
+            gainNodeLetterA = audioContext.createGain();
 
+            // Create low-pass filters (frequency control)
             filterHiro = audioContext.createBiquadFilter();
             filterHiro.type = "lowpass";
             filterHiro.frequency.value = 1000;
@@ -109,8 +170,23 @@
             filterKanji.type = "lowpass";
             filterKanji.frequency.value = 1000;
 
+            filterLetterA = audioContext.createBiquadFilter();
+            filterLetterA.type = "lowpass";
+            filterLetterA.frequency.value = 1000;
+
+            // Create delay nodes (echo effect)
+            delayNodeHiro = audioContext.createDelay();
+            delayNodeKanji = audioContext.createDelay();
+            delayNodeLetterA = audioContext.createDelay();
+
+            delayNodeHiro.delayTime.value = 0.5;
+            delayNodeKanji.delayTime.value = 0.5;
+            delayNodeLetterA.delayTime.value = 0.5;
+
+            // Connect the audio chain
             hiroSource.connect(filterHiro).connect(gainNodeHiro).connect(audioContext.destination);
             kanjiSource.connect(filterKanji).connect(gainNodeKanji).connect(audioContext.destination);
+            letterASource.connect(filterLetterA).connect(gainNodeLetterA).connect(audioContext.destination);
 
             isAudioSetup = true;
         }
@@ -127,22 +203,25 @@
             audioElement.play();
         }
 
+        function applySpeed() {
+            audioHiro.playbackRate = speedHiroControl.value;
+            audioKanji.playbackRate = speedKanjiControl.value;
+            audioLetterA.playbackRate = speedLetterAControl.value;
+        }
+
         document.getElementById("markerHiro").addEventListener("markerFound", async () => {
             await playAudio(audioHiro);
-        });
-
-        document.getElementById("markerHiro").addEventListener("markerLost", () => {
-            audioHiro.pause();
-            audioHiro.currentTime = 0;
+            applySpeed(); // Apply speed for Hiro when the marker is found
         });
 
         document.getElementById("markerKanji").addEventListener("markerFound", async () => {
             await playAudio(audioKanji);
+            applySpeed(); // Apply speed for Kanji when the marker is found
         });
 
-        document.getElementById("markerKanji").addEventListener("markerLost", () => {
-            audioKanji.pause();
-            audioKanji.currentTime = 0;
+        document.getElementById("markerLetterA").addEventListener("markerFound", async () => {
+            await playAudio(audioLetterA);
+            applySpeed(); // Apply speed for LetterA when the marker is found
         });
 
         volumeHiroControl.addEventListener("input", (e) => {
@@ -157,6 +236,12 @@
             }
         });
 
+        volumeLetterAControl.addEventListener("input", (e) => {
+            if (gainNodeLetterA) {
+                gainNodeLetterA.gain.value = e.target.value;
+            }
+        });
+
         filterHiroControl.addEventListener("input", (e) => {
             if (filterHiro) {
                 filterHiro.frequency.value = e.target.value;
@@ -168,7 +253,30 @@
                 filterKanji.frequency.value = e.target.value;
             }
         });
+
+        filterLetterAControl.addEventListener("input", (e) => {
+            if (filterLetterA) {
+                filterLetterA.frequency.value = e.target.value;
+            }
+        });
+
+        speedHiroControl.addEventListener("input", applySpeed);
+        speedKanjiControl.addEventListener("input", applySpeed);
+        speedLetterAControl.addEventListener("input", applySpeed);
+
+        loopHiroControl.addEventListener("change", () => {
+            audioHiro.loop = loopHiroControl.checked;
+        });
+
+        loopKanjiControl.addEventListener("change", () => {
+            audioKanji.loop = loopKanjiControl.checked;
+        });
+
+        loopLetterAControl.addEventListener("change", () => {
+            audioLetterA.loop = loopLetterAControl.checked;
+        });
     </script>
+
 </body>
 
 </html>
