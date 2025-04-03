@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AR Audio Manipulation</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://rawgit.com/jeromeetienne/ar.js/1.7.2/aframe/build/aframe-ar.min.js"></script>
+    <style>
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+        }
+
+        .sampleBox {
+            flex-direction: column;
+        }
+
+        .controls label,
+        .controls input {
+            display: block;
+            margin: 5px 0;
+        }
+
+        .a-loader-title,
+        .a-loader {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+        <a-marker preset="hiro" id="markerHiro">
+            <a-box position="0 0.5 0" material="shader: standard; color: #ffffff;"></a-box>
+        </a-marker>
+
+        <a-marker preset="kanji" id="markerKanji">
+            <a-sphere position="0 0.5 0" material="color: red;"></a-sphere>
+        </a-marker>
+
+        <a-entity camera></a-entity>
+    </a-scene>
+
+    <div class="controls">
+        <div class="sampleBox">
+            <audio id="audioHiro" src="sound_1.mp3" controls preload="auto"></audio>
+            <label for="volumeHiro">Hiro Volume:</label>
+            <input type="range" id="volumeHiro" min="0" max="1" step="0.1" value="1">
+            <label for="filterHiro">Hiro Filter:</label>
+            <input type="range" id="filterHiro" min="100" max="5000" step="100" value="1000">
+        </div>
+
+        <div class="sampleBox">
+            <audio id="audioKanji" src="sound_2.mp3" controls preload="auto"></audio>
+            <label for="volumeKanji">Kanji Volume:</label>
+            <input type="range" id="volumeKanji" min="0" max="1" step="0.1" value="1">
+            <label for="filterKanji">Kanji Filter:</label>
+            <input type="range" id="filterKanji" min="100" max="5000" step="100" value="1000">
+        </div>
+
+        <div class="sampleBox">
+            <audio id="audioBarcode" src="sound_3.mp3" controls preload="auto"></audio>
+            <label for="volumeKanji">Barcode Volume:</label>
+            <input type="range" id="volumeBarcode" min="0" max="1" step="0.1" value="1">
+            <label for="filterBarcode">Barcode Filter:</label>
+            <input type="range" id="filter" min="100" max="5000" step="100" value="1000">
+        </div>
+
+    </div>
+
+    <script>
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let isAudioSetup = false;
+
+        const audioHiro = document.getElementById("audioHiro");
+        const audioKanji = document.getElementById("audioKanji");
+        const volumeHiroControl = document.getElementById("volumeHiro");
+        const volumeKanjiControl = document.getElementById("volumeKanji");
+        const filterHiroControl = document.getElementById("filterHiro");
+        const filterKanjiControl = document.getElementById("filterKanji");
+
+        let hiroSource, kanjiSource, gainNodeHiro, gainNodeKanji, filterHiro, filterKanji;
+
+        function setupAudioNodes() {
+            if (isAudioSetup) return;
+
+            hiroSource = audioContext.createMediaElementSource(audioHiro);
+            kanjiSource = audioContext.createMediaElementSource(audioKanji);
+
+            gainNodeHiro = audioContext.createGain();
+            gainNodeKanji = audioContext.createGain();
+
+            filterHiro = audioContext.createBiquadFilter();
+            filterHiro.type = "lowpass";
+            filterHiro.frequency.value = 1000;
+
+            filterKanji = audioContext.createBiquadFilter();
+            filterKanji.type = "lowpass";
+            filterKanji.frequency.value = 1000;
+
+            hiroSource.connect(filterHiro).connect(gainNodeHiro).connect(audioContext.destination);
+            kanjiSource.connect(filterKanji).connect(gainNodeKanji).connect(audioContext.destination);
+
+            isAudioSetup = true;
+        }
+
+        async function ensureAudioContextRunning() {
+            if (audioContext.state === "suspended") {
+                await audioContext.resume();
+            }
+        }
+
+        async function playAudio(audioElement) {
+            await ensureAudioContextRunning();
+            setupAudioNodes();
+            audioElement.play();
+        }
+
+        document.getElementById("markerHiro").addEventListener("markerFound", async () => {
+            await playAudio(audioHiro);
+        });
+
+        document.getElementById("markerHiro").addEventListener("markerLost", () => {
+            audioHiro.pause();
+            audioHiro.currentTime = 0;
+        });
+
+        document.getElementById("markerKanji").addEventListener("markerFound", async () => {
+            await playAudio(audioKanji);
+        });
+
+        document.getElementById("markerKanji").addEventListener("markerLost", () => {
+            audioKanji.pause();
+            audioKanji.currentTime = 0;
+        });
+
+        volumeHiroControl.addEventListener("input", (e) => {
+            if (gainNodeHiro) {
+                gainNodeHiro.gain.value = e.target.value;
+            }
+        });
+
+        volumeKanjiControl.addEventListener("input", (e) => {
+            if (gainNodeKanji) {
+                gainNodeKanji.gain.value = e.target.value;
+            }
+        });
+
+        filterHiroControl.addEventListener("input", (e) => {
+            if (filterHiro) {
+                filterHiro.frequency.value = e.target.value;
+            }
+        });
+
+        filterKanjiControl.addEventListener("input", (e) => {
+            if (filterKanji) {
+                filterKanji.frequency.value = e.target.value;
+            }
+        });
+    </script>
+</body>
+
+</html>
